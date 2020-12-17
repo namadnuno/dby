@@ -1,0 +1,20 @@
+source_type: mysql
+source_db: source
+source_user: root
+source_password: root
+source_url: source_db
+
+destination_type: mysql
+destination_db: destination
+destination_user: root
+destination_password: root
+destination_url: destination_db
+
+migrations:
+  posts:
+    post_title: s.posts.post_name
+    post_status: 1
+    post_type:
+      condition: "'Page' in s.posts.post_name"  
+      true: "page"
+      false: "post"

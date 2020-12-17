@@ -1,0 +1,51 @@
+version: '3.1'
+
+services:
+  source_db:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: source
+    volumes:
+      - ./docker-entrypoint-initdb.d/source:/docker-entrypoint-initdb.d
+  destination_db:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: destination
+    volumes:
+      - ./docker-entrypoint-initdb.d/destination:/docker-entrypoint-initdb.d
+    depends_on:
+      - source_db
+  phpmyadmin_source:
+    depends_on:
+      - source_db
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: source_db
+      MYSQL_ROOT_PASSWORD: root 
+    ports:
+      - '8080:80'
+  phpmyadmin_destination:
+    depends_on:
+      - source_db
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: destination_db
+      MYSQL_ROOT_PASSWORD: root 
+    ports:
+      - '8081:80'
+  test:
+    build: .
+    # command: python3 main.py
+    tty: true
+    volumes:
+      - .:/code
+    depends_on:
+      - destination_db
