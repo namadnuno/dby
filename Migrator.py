@@ -36,11 +36,21 @@ class Migrator():
         return "condition" in migration.keys()
     
     def solve_condition(self, condition, data):
-        m = self.get_migration_info(condition)
-        col = m['col']
-        table = m['table']
-        condition = condition.replace("s." + table + "." + col, "'" + data[col] + "'")
-        return eval(condition)
+        or_conditions = condition.split(" or ")
+        result = False
+        for or_condition in or_conditions:
+            or_result = True
+            and_conditions = or_condition.split(" and ")
+            for and_condition in and_conditions:
+                m = self.get_migration_info(and_condition)
+                col = m['col']
+                table = m['table']
+                and_condition = and_condition.replace(
+                    "s." + table + "." + col, "'" + data[col] + "'")
+                or_result = eval(and_condition) and or_result
+            result = result or or_result
+        
+        return result
         
 
     def migrateTable(self, table, migration):
